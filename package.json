@@ -1,0 +1,56 @@
+{
+  "name": "rakuten-link-linux",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Linux startup verification wrapper for the macOS Rakuten Link desktop build",
+  "license": "UNLICENSED",
+  "scripts": {
+    "extract": "node scripts/extract.js",
+    "patch": "node scripts/patch.js",
+    "prepare": "node scripts/prepare.js",
+    "dev": "node scripts/dev.js",
+    "package": "node scripts/package.js",
+    "appimage:run": "node scripts/run-appimage.js",
+    "logs:bootstrap": "tail -n 120 -f \"$HOME/.local/state/rakuten-link-linux/bootstrap.log\"",
+    "public:check": "node scripts/public-check.js",
+    "clean": "node scripts/clean.js"
+  },
+  "devDependencies": {
+    "@electron/asar": "^3.2.8",
+    "electron": "13.6.9",
+    "electron-builder": "^24.13.3"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "build": {
+    "appId": "jp.co.rakuten.link.linux",
+    "productName": "Rakuten Link",
+    "directories": {
+      "app": ".generated/work/app",
+      "output": "release"
+    },
+    "files": [
+      "**/*"
+    ],
+    "asar": false,
+    "npmRebuild": false,
+    "nodeGypRebuild": false,
+    "buildDependenciesFromSource": false,
+    "electronVersion": "13.6.9",
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Network",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "icon": ".generated/work/app/dist/assets/icons/images"
+    },
+    "appImage": {
+      "executableArgs": [
+        "--no-sandbox",
+        "--disable-setuid-sandbox"
+      ]
+    }
+  }
+}
