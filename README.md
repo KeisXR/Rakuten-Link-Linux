@@ -1,54 +1,42 @@
 # Rakuten Link for Linux
 
-This repository contains only the conversion tooling that wraps the macOS Rakuten Link desktop build and turns it into a Linux startup-verification target.
+This repository contains only the wrapper scripts and patch layer used to run the macOS Rakuten Link desktop app on Linux for personal verification.
 
-## What it does
+## Overview
 
 - Extracts `Info.plist`, `app-update.yml`, and `app.asar` from `RakutenLink.dmg`
-- Expands the bundled Electron app into a generated worktree
-- Applies Linux safety patches for updater, tray/icon handling, permission APIs, and Bluetooth
-- Runs the patched app with Electron `13.6.9`
-- Builds an AppImage from the patched runtime
-
-## Current scope
-
-- Target platform: Ubuntu/Debian x86_64
-- Goal: reach stable startup and primary UI rendering
-- Auto-update is disabled by default on Linux
-- Bluetooth discovery is disabled by default on Linux
-- Safe window mode is enabled by default on Linux to avoid rapid show/hide loops
-
-This repository is intended to publish only the wrapper scripts and patch layer. Do not commit or redistribute the original Rakuten Link application files, extracted vendor assets, or generated AppImages.
+- Applies Linux compatibility patches
+- Runs the patched app with Electron
+- Builds an AppImage
 
 ## Prerequisites
 
 - Node.js 18+
 - `npm`
 - `7z`
-- `asar` on your `PATH`, or `@electron/asar` installed through `npm install`
 
 ## Usage
 
 1. Place the macOS installer at `/home/kei/ドキュメント/RakutenLink4Linux/RakutenLink.dmg`
-2. Install the toolchain:
+2. Install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Extract vendor assets:
+3. Extract the app:
 
 ```bash
 npm run extract
 ```
 
-4. Expand and patch the Linux runtime:
+4. Patch the Linux runtime:
 
 ```bash
 npm run patch
 ```
 
-5. Launch the patched app with Electron:
+5. Run it with Electron:
 
 ```bash
 npm run dev
@@ -60,21 +48,28 @@ npm run dev
 npm run package
 ```
 
-7. Run the built AppImage without depending on FUSE:
+7. Run the AppImage:
 
 ```bash
 npm run appimage:run
 ```
 
-## Before publishing
+## Publishing Notes
 
-Check that no extracted or generated Rakuten Link assets are left in the repository:
+Do not commit or redistribute:
+
+- `RakutenLink.dmg`
+- extracted vendor files
+- generated AppImages
+- anything under `.generated/`, `release/`, `dist/`, or `squashfs-root/`
+
+Before publishing, check that only the wrapper project is git-visible:
 
 ```bash
 npm run public:check
 ```
 
-If it reports leftovers, remove them with:
+If needed, remove generated output:
 
 ```bash
 npm run clean
@@ -83,49 +78,17 @@ npm run clean
 ## Environment flags
 
 - `RAKUTENLINK_DISABLE_UPDATER=1`
-  - Default on Linux. Set to `0` to opt back into the bundled updater behavior.
 - `RAKUTENLINK_ENABLE_BLUETOOTH=0`
-  - Default on Linux. Set to `1` to attempt the bundled noble-based flow.
 - `RAKUTENLINK_LINUX_SAFE_WINDOW_MODE=1`
-  - Default on Linux. Keeps the main window from being auto-hidden/minimized and skips the vendor white-screen flash workaround.
 - `RAKUTENLINK_SUPPRESS_VENDOR_STDOUT=1`
-  - Default on Linux. Hides the vendor's obfuscated base64-like console noise from the terminal.
-- `APPIMAGE_EXTRACT_AND_RUN=1`
-  - No longer required for the helper script. `npm run appimage:run` extracts the AppImage internally and launches `AppRun` directly.
-
-Example:
-
-```bash
-RAKUTENLINK_ENABLE_BLUETOOTH=1 npm run dev
-```
-
-Readable Linux bootstrap logs:
-
-```bash
-npm run logs:bootstrap
-```
-
-## Generated output
-
-- `.generated/source`
-  - Extracted macOS metadata and `app.asar`
-- `.generated/work/app`
-  - Expanded, patched Linux runtime
-- `.generated/manifest.json`
-  - Source DMG metadata and SHA-256 of the extracted `app.asar`
-- `release/`
-  - AppImage output
+- `RAKUTENLINK_SUPPRESS_VENDOR_STDOUT=0` to show the app's original console output again
 
 ## Logging
 
-- Early Linux bootstrap logs:
+- Human-readable bootstrap log:
   - `~/.local/state/rakuten-link-linux/bootstrap.log`
-- The bundled app still writes its normal Electron logs through `electron-log`
-- If `xdg-mime` warns about `qtpaths` on launch, it is non-fatal in current tests
 
 ## Known limitations
 
-- This project does not provide Linux-native source code for Rakuten Link
-- Auto-update is stubbed on Linux by default
-- Bluetooth is stubbed on Linux by default
-- Native module rebuilds are out of scope for this milestone
+- This project does not include Rakuten Link source code
+- Some features are still Linux workarounds rather than native implementations
