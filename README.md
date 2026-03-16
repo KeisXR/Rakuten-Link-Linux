@@ -17,7 +17,7 @@ This repository contains only the wrapper scripts and patch layer used to run th
 
 ## Usage
 
-1. Place the macOS installer at `/home/kei/ドキュメント/RakutenLink4Linux/RakutenLink.dmg`
+1. Place the macOS installer in the repository root as `RakutenLink.dmg`
 2. Install dependencies:
 
 ```bash

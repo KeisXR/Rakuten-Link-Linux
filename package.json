@@ -11,7 +11,7 @@
     "dev": "node scripts/dev.js",
     "package": "node scripts/package.js",
     "appimage:run": "node scripts/run-appimage.js",
-    "logs:bootstrap": "tail -n 120 -f \"$HOME/.local/state/rakuten-link-linux/bootstrap.log\"",
+    "logs:bootstrap": "node scripts/logs-bootstrap.js",
     "public:check": "node scripts/public-check.js",
     "clean": "node scripts/clean.js"
   },
