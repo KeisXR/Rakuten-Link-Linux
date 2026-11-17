@@ -9,6 +9,8 @@ This repository contains only the wrapper scripts and patch layer used to run th
 - Runs the patched app with Electron
 - Builds an AppImage
 
+Verified against Rakuten Link 2.1.0 for macOS, which bundles Electron 15.5.7. The wrapper uses the same Electron version, because 2.1.0 needs at least Node 16 (`require('node:crypto')`) and does not start on Electron 13.
+
 ## Prerequisites
 
 - Node.js 18+
@@ -17,7 +19,7 @@ This repository contains only the wrapper scripts and patch layer used to run th
 
 ## Usage
 
-1. Place the macOS installer in the repository root as `RakutenLink.dmg`
+1. Download the Mac installer from the official page (https://service.link.link/desktop/) and place it in the repository root as `RakutenLink.dmg`
 2. Install dependencies:
 
 ```bash
@@ -35,6 +37,8 @@ npm run extract
 ```bash
 npm run patch
 ```
+
+`npm install` no longer runs the extract and patch steps automatically. Use `npm run prepare:runtime` to run both at once.
 
 5. Run it with Electron:
 

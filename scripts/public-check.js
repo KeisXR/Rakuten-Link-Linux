@@ -20,12 +20,22 @@ const forbiddenPrefixes = [
   'preload-popout.js',
   'preload-call-popout.js',
   'incoming.call.notification/',
+  'electron.menu.template.js',
 ];
 
+const forbiddenPatterns = [
+  /(^|\/)app\.asar$/,
+  /\.AppImage$/,
+  /\.dmg$/,
+];
+
+// Tracked files plus untracked files that are not gitignored, i.e. everything
+// that is or could be committed. `git status` alone misses files that are
+// already committed and unchanged.
 function listGitVisiblePaths() {
   const result = spawnSync(
     'git',
-    ['status', '--short', '--untracked-files=all', '--ignored=no'],
+    ['ls-files', '-z', '--cached', '--others', '--exclude-standard'],
     {
       cwd: ROOT_DIR,
       encoding: 'utf8',
@@ -37,19 +47,18 @@ function listGitVisiblePaths() {
   }
 
   if (result.status !== 0) {
-    throw new Error(result.stderr || `git status failed with exit code ${result.status}`);
+    throw new Error(result.stderr || `git ls-files failed with exit code ${result.status}`);
   }
 
-  return result.stdout
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => line.slice(3));
+  return [...new Set(result.stdout.split('\0').filter(Boolean))];
 }
 
 function isForbidden(relativePath) {
   const normalized = relativePath.split(path.sep).join('/');
-  return forbiddenPrefixes.some((prefix) => normalized === prefix || normalized.startsWith(prefix));
+  return (
+    forbiddenPrefixes.some((prefix) => normalized === prefix || normalized.startsWith(prefix)) ||
+    forbiddenPatterns.some((pattern) => pattern.test(normalized))
+  );
 }
 
 const offenders = listGitVisiblePaths().filter(isForbidden);

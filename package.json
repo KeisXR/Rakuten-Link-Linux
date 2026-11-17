@@ -7,7 +7,7 @@
   "scripts": {
     "extract": "node scripts/extract.js",
     "patch": "node scripts/patch.js",
-    "prepare": "node scripts/prepare.js",
+    "prepare:runtime": "node scripts/prepare.js",
     "dev": "node scripts/dev.js",
     "package": "node scripts/package.js",
     "appimage:run": "node scripts/run-appimage.js",
@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@electron/asar": "^3.2.8",
-    "electron": "13.6.9",
+    "electron": "15.5.7",
     "electron-builder": "^24.13.3"
   },
   "engines": {
@@ -37,7 +37,7 @@
     "npmRebuild": false,
     "nodeGypRebuild": false,
     "buildDependenciesFromSource": false,
-    "electronVersion": "13.6.9",
+    "electronVersion": "15.5.7",
     "linux": {
       "target": [
         "AppImage"

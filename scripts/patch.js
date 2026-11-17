@@ -102,10 +102,20 @@ function patchMainProcess(appDir) {
     'Linux-aware cache directory'
   );
 
-  source = replaceOrThrow(
+  // v2.1.0 added `let successFlag = false;` above the log line, so match the
+  // handler header and the first `if (!isMac) {` loosely instead of verbatim.
+  source = replaceRegexOrThrow(
     source,
-    "ipcMain.on('run-bluetooth', (event, data, timerValue, printID) => {\n    devToolsLog(`ipcMain :: run-bluetooth :: bluetooth :: event - ${event}, data - ${data}, timerValue - ${timerValue}, printID - ${printID}`);\n    if (!isMac) {",
-    "ipcMain.on('run-bluetooth', (event, data, timerValue, printID) => {\n    devToolsLog(`ipcMain :: run-bluetooth :: bluetooth :: event - ${event}, data - ${data}, timerValue - ${timerValue}, printID - ${printID}`);\n    if (isLinux && process.env.RAKUTENLINK_ENABLE_BLUETOOTH !== '1') {\n        devToolsLog(\"bluetooth :: linux bluetooth disabled\");\n        if (win && win.webContents) {\n            win.webContents.send('mdns-or-bluetooth-response', { value: 'unsupported', type: 'bluetooth' });\n        }\n        return;\n    }\n    if (isWindows) {",
+    /(ipcMain\.on\('run-bluetooth', \(event, data, timerValue, printID\) => \{\n(?:[^\n]*\n){1,4}?)(\s*)if \(!isMac\) \{/,
+    (match, header, indent) =>
+      `${header}${indent}if (isLinux && process.env.RAKUTENLINK_ENABLE_BLUETOOTH !== '1') {\n` +
+      `${indent}    devToolsLog("bluetooth :: linux bluetooth disabled");\n` +
+      `${indent}    if (win && win.webContents) {\n` +
+      `${indent}        win.webContents.send('mdns-or-bluetooth-response', { value: 'unsupported', type: 'bluetooth' });\n` +
+      `${indent}    }\n` +
+      `${indent}    return;\n` +
+      `${indent}}\n` +
+      `${indent}if (isWindows) {`,
     'Linux guard for bluetooth scan handler'
   );
 
@@ -123,10 +133,12 @@ function patchMainProcess(appDir) {
     'Linux-safe dom-ready show/hide behavior'
   );
 
-  source = replaceOrThrow(
+  // v2.1.0 inserted a `trafficLightPosition` line between these options.
+  source = replaceRegexOrThrow(
     source,
-    "            titleBarStyle: \"hidden\",\n            frame: isMac,\n            fullscreenable: isMac,\n",
-    "            titleBarStyle: isLinux ? \"default\" : \"hidden\",\n            frame: isMac || isLinux,\n            fullscreenable: isMac,\n",
+    /titleBarStyle: "hidden",(\n[^\n]*trafficLightPosition[^\n]*)?\n(\s*)frame: isMac,\n/,
+    (match, trafficLight, indent) =>
+      `titleBarStyle: isLinux ? "default" : "hidden",${trafficLight || ''}\n${indent}frame: isMac || isLinux,\n`,
     'Linux native frame for main window'
   );
 

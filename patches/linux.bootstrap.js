@@ -162,21 +162,23 @@ function getWindowState(win) {
   return state;
 }
 
-function describeWindow(win) {
+function describeWindow(win, knownId) {
   if (!win) {
     return 'unknown-window';
   }
 
+  // Every property access on a destroyed BrowserWindow (including `id`) throws
+  // "Object has been destroyed", so check isDestroyed() before touching it.
   try {
     if (typeof win.isDestroyed === 'function' && win.isDestroyed()) {
-      return `id=${win.id || 'unknown'} destroyed=true`;
+      return `id=${knownId === undefined ? 'unknown' : knownId} destroyed=true`;
     }
 
     const bounds = typeof win.getBounds === 'function' ? win.getBounds() : null;
     const title = typeof win.getTitle === 'function' ? win.getTitle() : '';
     return `id=${win.id} title=${JSON.stringify(title)} bounds=${bounds ? `${bounds.width}x${bounds.height}@${bounds.x},${bounds.y}` : 'unknown'}`;
   } catch (error) {
-    return `id=${win.id || 'unknown'} detail-error=${error.message}`;
+    return `id=${knownId === undefined ? 'unknown' : knownId} detail-error=${error.message}`;
   }
 }
 
@@ -237,6 +239,7 @@ function attachWindowLogging(win) {
 
   markMainWindowCandidate(win);
   getWindowState(win);
+  const winId = win.id;
 
   const lifecycleEvents = [
     'ready-to-show',
@@ -254,9 +257,13 @@ function attachWindowLogging(win) {
 
   lifecycleEvents.forEach((eventName) => {
     win.on(eventName, () => {
-      appendBootstrapLog(`[window:${eventName}] ${describeWindow(win)}`);
-      if (eventName === 'closed') {
-        windowState.delete(win.id);
+      try {
+        appendBootstrapLog(`[window:${eventName}] ${describeWindow(win, winId)}`);
+        if (eventName === 'closed') {
+          windowState.delete(winId);
+        }
+      } catch (error) {
+        appendBootstrapLog(`window ${eventName} logging failed: ${error.stack || error}`);
       }
     });
   });
