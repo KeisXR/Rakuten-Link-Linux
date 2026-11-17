@@ -129,7 +129,10 @@ function patchMainProcess(appDir) {
   source = replaceOrThrow(
     source,
     "            devToolsLog('on dom-ready, triggering white screencheck in renderer');\n            triggerWhiteScreenCheckInRenderer();\n            // patch fix by @abhinav white screen issue still exists on v13+ so, bringing this back\n            win.hide();\n            setTimeout(() => {\n                win.show();\n            }, 100);\n",
-    "            devToolsLog('on dom-ready, triggering white screencheck in renderer');\n            triggerWhiteScreenCheckInRenderer();\n            // The original hide/show flash is useful on macOS/Windows but causes severe flicker loops on Linux.\n            if (!linuxSafeWindowMode) {\n                win.hide();\n                setTimeout(() => {\n                    win.show();\n                }, 100);\n            }\n",
+    // The window is created with show:false and paintWhenInitiallyHidden:false,
+    // so 'ready-to-show' never fires and this hide/show is what first shows it.
+    // Keep a single show() in safe mode instead of dropping it entirely.
+    "            devToolsLog('on dom-ready, triggering white screencheck in renderer');\n            triggerWhiteScreenCheckInRenderer();\n            // The original hide/show flash is useful on macOS/Windows but causes severe flicker loops on Linux.\n            if (!linuxSafeWindowMode) {\n                win.hide();\n                setTimeout(() => {\n                    win.show();\n                }, 100);\n            } else if (!win.isVisible()) {\n                win.show();\n            }\n",
     'Linux-safe dom-ready show/hide behavior'
   );
 
