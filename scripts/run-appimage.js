@@ -7,10 +7,12 @@ const { spawn } = require('child_process');
 const { DIST_DIR, emptyDir, log, runCommand } = require('./common');
 
 function findAppImage() {
-  const entries = fs.readdirSync(DIST_DIR).filter((entry) => entry.endsWith('.AppImage')).sort();
+  const entries = fs.existsSync(DIST_DIR)
+    ? fs.readdirSync(DIST_DIR).filter((entry) => entry.endsWith('.AppImage')).sort()
+    : [];
 
   if (entries.length === 0) {
-    throw new Error('No AppImage found in dist/. Run `npm run package` first.');
+    throw new Error(`No AppImage found in ${DIST_DIR}. Run \`npm run package\` first.`);
   }
 
   return path.join(DIST_DIR, entries[entries.length - 1]);

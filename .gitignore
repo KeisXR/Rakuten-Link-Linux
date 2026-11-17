@@ -6,11 +6,13 @@ squashfs-root/
 *.AppImage
 npm-debug.log*
 RakutenLink.dmg
+*.dmg
 main.js
 electron-peer-connection.js
 call.popout.window.js
 chat.popout.window.js
 setupEvents.js
+electron.menu.template.js
 utils.js
 preload.js
 preload-popout.js
